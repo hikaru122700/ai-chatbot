@@ -7,7 +7,8 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "deploy": "git add -A && git commit -m 'Deploy' --allow-empty && git push origin main && vercel --prod --yes"
   },
   "dependencies": {
     "@prisma/client": "^7.2.0",
