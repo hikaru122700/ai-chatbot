@@ -1,11 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { openai, MODEL_NAME } from '@/app/lib/openai';
+import OpenAI from 'openai';
+import { MODEL_NAME } from '@/app/lib/openai';
 import { prisma } from '@/app/lib/db';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
+    const apiKey = request.headers.get('X-API-Key');
+
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: 'API key is required' },
+        { status: 401 }
+      );
+    }
+
     const { conversationId, message } = await request.json();
 
     if (!message || typeof message !== 'string') {
@@ -14,6 +25,8 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const openai = new OpenAI({ apiKey });
 
     let currentConversationId = conversationId;
 

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import MessageList, { Message } from './MessageList';
 import MessageInput from './MessageInput';
 import ConversationHistory, { Conversation } from './ConversationHistory';
+import ApiKeyInput from './ApiKeyInput';
 
 export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -13,6 +14,12 @@ export default function ChatInterface() {
   >(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+
+  const handleApiKeyChange = useCallback((key: string | null) => {
+    setApiKey(key);
+  }, []);
 
   useEffect(() => {
     loadConversations();
@@ -52,6 +59,12 @@ export default function ChatInterface() {
   };
 
   const handleSendMessage = async (message: string) => {
+    if (!apiKey) {
+      setError('APIキーを設定してください');
+      setShowSettings(true);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -67,6 +80,7 @@ export default function ChatInterface() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-API-Key': apiKey,
         },
         body: JSON.stringify({
           conversationId: currentConversationId,
@@ -175,14 +189,55 @@ export default function ChatInterface() {
       />
 
       <div className="flex-1 flex flex-col">
+        <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+            AI Chat
+          </h1>
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className={`p-2 rounded-lg transition-colors ${
+              apiKey
+                ? 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'
+                : 'text-yellow-600 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/20'
+            }`}
+            title={apiKey ? 'APIキー設定済み' : 'APIキーを設定'}
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </button>
+        </div>
+
+        {showSettings && (
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+            <ApiKeyInput onApiKeyChange={handleApiKeyChange} />
+          </div>
+        )}
+
         {error && (
           <div className="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-200 px-4 py-3 text-center">
             {error}
           </div>
         )}
 
+        {!apiKey && !showSettings && (
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-700 px-4 py-3 text-center">
+            <span className="text-yellow-700 dark:text-yellow-300 text-sm">
+              チャットを開始するには、
+              <button
+                onClick={() => setShowSettings(true)}
+                className="underline hover:no-underline font-medium"
+              >
+                APIキーを設定
+              </button>
+              してください。
+            </span>
+          </div>
+        )}
+
         <MessageList messages={messages} isLoading={isLoading} />
-        <MessageInput onSendMessage={handleSendMessage} disabled={isLoading} />
+        <MessageInput onSendMessage={handleSendMessage} disabled={isLoading || !apiKey} />
       </div>
     </div>
   );

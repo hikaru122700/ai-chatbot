@@ -9,10 +9,10 @@ interface MarkdownRendererProps {
 
 export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
   return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      className="prose prose-sm dark:prose-invert max-w-none"
-      components={{
+    <div className="prose prose-sm dark:prose-invert max-w-none">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
         code({ inline, className, children, ...props }: any) {
           const match = /language-(\w+)/.exec(className || '');
           return !inline ? (
@@ -46,8 +46,9 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
           );
         },
       }}
-    >
-      {content}
-    </ReactMarkdown>
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
   );
 }
