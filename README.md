@@ -86,10 +86,21 @@ chmod +x deploy-gcp.sh
 ### Vercelへのデプロイ
 
 1. Vercelにプロジェクトをインポート
-2. Vercel Postgresデータベースを作成
-3. 環境変数を設定（`ANTHROPIC_API_KEY`）
-4. デプロイ
+2. Vercel Postgresデータベースを作成（Neon推奨）
+3. デプロイ
 
+```bash
+# ワンコマンドでGitHub pushとVercelデプロイを実行
+npm run deploy
+```
+
+このコマンドで以下が自動実行されます：
+- すべての変更をステージング
+- コミット作成
+- GitHubにプッシュ
+- Vercelに本番デプロイ
+
+**手動デプロイの場合:**
 ```bash
 # Vercel CLIを使用する場合
 vercel
