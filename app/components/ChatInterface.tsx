@@ -1,11 +1,94 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import MessageList, { Message } from './MessageList';
 import MessageInput, { ImageAttachment, DocumentAttachment } from './MessageInput';
 import ConversationHistory, { Conversation } from './ConversationHistory';
 import ApiKeyInput from './ApiKeyInput';
 import CharacterSettings, { CharacterConfig } from './CharacterSettings';
+
+// エラータイプの定義
+type ErrorType = 'network' | 'timeout' | 'api' | 'auth' | 'unknown';
+
+interface ErrorInfo {
+  type: ErrorType;
+  message: string;
+  canRetry: boolean;
+}
+
+// 最後のメッセージ情報（リトライ用）
+interface LastMessageData {
+  message: string;
+  images?: ImageAttachment[];
+  documents?: DocumentAttachment[];
+}
+
+// エラー分類関数
+function classifyError(error: unknown): ErrorInfo {
+  if (error instanceof TypeError && error.message.includes('fetch')) {
+    return {
+      type: 'network',
+      message: 'ネットワークエラーが発生しました。インターネット接続を確認してください。',
+      canRetry: true,
+    };
+  }
+
+  if (error instanceof DOMException && error.name === 'AbortError') {
+    return {
+      type: 'timeout',
+      message: 'リクエストがタイムアウトしました。もう一度お試しください。',
+      canRetry: true,
+    };
+  }
+
+  if (error instanceof Error) {
+    const msg = error.message.toLowerCase();
+
+    if (msg.includes('401') || msg.includes('unauthorized') || msg.includes('api key')) {
+      return {
+        type: 'auth',
+        message: 'APIキーが無効です。設定を確認してください。',
+        canRetry: false,
+      };
+    }
+
+    if (msg.includes('429') || msg.includes('rate limit')) {
+      return {
+        type: 'api',
+        message: 'APIの利用制限に達しました。しばらく待ってから再試行してください。',
+        canRetry: true,
+      };
+    }
+
+    if (msg.includes('500') || msg.includes('502') || msg.includes('503')) {
+      return {
+        type: 'api',
+        message: 'サーバーエラーが発生しました。しばらく待ってから再試行してください。',
+        canRetry: true,
+      };
+    }
+
+    if (msg.includes('network') || msg.includes('failed to fetch')) {
+      return {
+        type: 'network',
+        message: 'ネットワークエラーが発生しました。インターネット接続を確認してください。',
+        canRetry: true,
+      };
+    }
+
+    return {
+      type: 'unknown',
+      message: error.message || 'エラーが発生しました',
+      canRetry: true,
+    };
+  }
+
+  return {
+    type: 'unknown',
+    message: 'エラーが発生しました',
+    canRetry: true,
+  };
+}
 
 export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -15,9 +98,11 @@ export default function ChatInterface() {
   >(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorInfo, setErrorInfo] = useState<ErrorInfo | null>(null);
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [character, setCharacter] = useState<CharacterConfig | null>(null);
+  const lastMessageRef = useRef<LastMessageData | null>(null);
 
   const handleApiKeyChange = useCallback((key: string | null) => {
     setApiKey(key);
