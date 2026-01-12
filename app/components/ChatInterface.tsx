@@ -278,7 +278,9 @@ export default function ChatInterface() {
       }
     } catch (err) {
       console.error('Send message error:', err);
-      setError('メッセージの送信に失敗しました');
+      const errorDetails = classifyError(err);
+      setError(errorDetails.message);
+      setErrorInfo(errorDetails);
       setMessages((prev) => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
