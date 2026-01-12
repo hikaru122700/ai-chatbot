@@ -129,7 +129,12 @@ export default function MessageList({ messages, isLoading }: MessageListProps) {
                   )}
                 </div>
               ) : (
-                <MarkdownRenderer content={message.content} />
+                <div>
+                  <MarkdownRenderer content={message.content} />
+                  <div className="flex justify-end mt-2">
+                    <SpeakButton text={message.content} />
+                  </div>
+                </div>
               )}
             </div>
           </div>
