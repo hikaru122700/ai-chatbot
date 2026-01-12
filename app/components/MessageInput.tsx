@@ -454,7 +454,11 @@ export default function MessageInput({
         </button>
 
         <div className="flex-1 flex flex-col">
+          <label htmlFor="message-input" className="sr-only">
+            メッセージを入力
+          </label>
           <textarea
+            id="message-input"
             value={input}
             onChange={(e) => {
               const newValue = e.target.value;
@@ -466,6 +470,7 @@ export default function MessageInput({
             placeholder="メッセージを入力... (Enter: 送信, Shift+Enter: 改行)"
             disabled={disabled}
             maxLength={MAX_MESSAGE_LENGTH}
+            aria-describedby="message-char-count"
             className={`flex-1 resize-none rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed ${
               input.length >= MAX_MESSAGE_LENGTH
                 ? 'border-red-500 focus:ring-red-500'
