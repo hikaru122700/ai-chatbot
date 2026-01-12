@@ -203,30 +203,41 @@ export default function MessageInput({
       try {
         let content = '';
 
-        if (file.type === 'application/pdf') {
+        if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
           // PDF parsing using pdfjs-dist
-          const pdfjsLib = await import('pdfjs-dist');
-          pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+          try {
+            const pdfjsLib = await import('pdfjs-dist');
 
-          const arrayBuffer = await file.arrayBuffer();
-          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-          const textParts: string[] = [];
+            // Set worker source - use local worker or CDN
+            if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+              pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+            }
 
-          for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const textContent = await page.getTextContent();
-            const pageText = textContent.items
-              .map((item) => {
-                if ('str' in item && typeof item.str === 'string') {
-                  return item.str;
-                }
-                return '';
-              })
-              .join(' ');
-            textParts.push(pageText);
+            const arrayBuffer = await file.arrayBuffer();
+            const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+            const pdf = await loadingTask.promise;
+            const textParts: string[] = [];
+
+            for (let i = 1; i <= pdf.numPages; i++) {
+              const page = await pdf.getPage(i);
+              const textContent = await page.getTextContent();
+              const pageText = textContent.items
+                .map((item) => {
+                  if ('str' in item && typeof item.str === 'string') {
+                    return item.str;
+                  }
+                  return '';
+                })
+                .join(' ');
+              textParts.push(pageText);
+            }
+
+            content = textParts.join('\n\n');
+          } catch (pdfError) {
+            console.error('PDF parsing error:', pdfError);
+            // Fallback: just note that it's a PDF that couldn't be parsed
+            content = `[PDFファイル: ${file.name} - テキスト抽出に失敗しました]`;
           }
-
-          content = textParts.join('\n\n');
         } else if (file.type === 'text/plain' || file.name.endsWith('.txt') || file.name.endsWith('.md')) {
           // Plain text files
           content = await file.text();
