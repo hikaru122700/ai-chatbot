@@ -5,6 +5,7 @@ import MessageList, { Message } from './MessageList';
 import MessageInput from './MessageInput';
 import ConversationHistory, { Conversation } from './ConversationHistory';
 import ApiKeyInput from './ApiKeyInput';
+import CharacterSettings, { CharacterConfig } from './CharacterSettings';
 
 export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -16,9 +17,14 @@ export default function ChatInterface() {
   const [error, setError] = useState<string | null>(null);
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [character, setCharacter] = useState<CharacterConfig | null>(null);
 
   const handleApiKeyChange = useCallback((key: string | null) => {
     setApiKey(key);
+  }, []);
+
+  const handleCharacterChange = useCallback((config: CharacterConfig) => {
+    setCharacter(config);
   }, []);
 
   useEffect(() => {
@@ -85,6 +91,11 @@ export default function ChatInterface() {
         body: JSON.stringify({
           conversationId: currentConversationId,
           message,
+          systemPrompt: character ? `あなたは「${character.name}」という名前のAIアシスタントです。
+性格: ${character.personality}
+話し方: ${character.speechStyle}
+ユーザーの生産性向上をサポートする親しみやすいアシスタントとして振る舞ってください。
+絵文字を適度に使って、楽しい雰囲気で会話してください。` : undefined,
         }),
       });
 
