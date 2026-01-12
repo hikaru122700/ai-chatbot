@@ -109,7 +109,7 @@ export default function ApiKeyInput({ onApiKeyChange }: ApiKeyInputProps) {
         )}
       </div>
       <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-        APIキーはブラウザのローカルストレージに保存されます。
+        APIキーはセッションストレージに保存されます（ブラウザを閉じると削除）。
         <a
           href="https://platform.openai.com/api-keys"
           target="_blank"
