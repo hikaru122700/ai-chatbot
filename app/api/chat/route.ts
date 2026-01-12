@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { conversationId, message } = await request.json();
+    const { conversationId, message, systemPrompt } = await request.json();
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json(
@@ -57,10 +57,23 @@ export async function POST(request: NextRequest) {
     });
 
     // Convert to OpenAI message format
-    const openaiMessages = messages.map((msg) => ({
-      role: msg.role as 'user' | 'assistant',
-      content: msg.content,
-    }));
+    const openaiMessages: Array<{role: 'system' | 'user' | 'assistant', content: string}> = [];
+
+    // Add system prompt if provided
+    if (systemPrompt) {
+      openaiMessages.push({
+        role: 'system',
+        content: systemPrompt,
+      });
+    }
+
+    // Add conversation history
+    messages.forEach((msg) => {
+      openaiMessages.push({
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content,
+      });
+    });
 
     // Stream response from OpenAI
     const stream = await openai.chat.completions.create({
