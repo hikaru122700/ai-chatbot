@@ -62,7 +62,8 @@ export async function POST(request: NextRequest) {
     });
 
     // Convert to OpenAI message format
-    const openaiMessages: Array<{role: 'system' | 'user' | 'assistant', content: string}> = [];
+    type MessageContent = string | Array<{type: 'text', text: string} | {type: 'image_url', image_url: {url: string}}>;
+    const openaiMessages: Array<{role: 'system' | 'user' | 'assistant', content: MessageContent}> = [];
 
     // Add system prompt if provided
     if (systemPrompt) {
@@ -72,13 +73,52 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Add conversation history
-    messages.forEach((msg) => {
+    // Add conversation history (except the last message which we'll handle with images)
+    const historyMessages = messages.slice(0, -1);
+    historyMessages.forEach((msg) => {
       openaiMessages.push({
         role: msg.role as 'user' | 'assistant',
         content: msg.content,
       });
     });
+
+    // Add the current message with images if provided
+    if (images && images.length > 0) {
+      const contentParts: Array<{type: 'text', text: string} | {type: 'image_url', image_url: {url: string}}> = [];
+
+      // Add images first
+      images.forEach((img: {base64: string, type: string}) => {
+        contentParts.push({
+          type: 'image_url',
+          image_url: {
+            url: `data:${img.type};base64,${img.base64}`,
+          },
+        });
+      });
+
+      // Add text message if provided
+      if (message) {
+        contentParts.push({
+          type: 'text',
+          text: message,
+        });
+      } else {
+        contentParts.push({
+          type: 'text',
+          text: 'この画像について説明してください。',
+        });
+      }
+
+      openaiMessages.push({
+        role: 'user',
+        content: contentParts,
+      });
+    } else {
+      openaiMessages.push({
+        role: 'user',
+        content: message,
+      });
+    }
 
     // Stream response from OpenAI
     const stream = await openai.chat.completions.create({
