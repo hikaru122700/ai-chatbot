@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Add the current message with images if provided
-    if (images && images.length > 0) {
+    if (hasImages) {
       const contentParts: Array<{type: 'text', text: string} | {type: 'image_url', image_url: {url: string}}> = [];
 
       // Add images first
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
       });
 
       // Add text message if provided
-      if (message) {
+      if (hasMessage) {
         contentParts.push({
           type: 'text',
           text: message,
