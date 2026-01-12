@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import MessageList, { Message } from './MessageList';
-import MessageInput from './MessageInput';
+import MessageInput, { ImageAttachment } from './MessageInput';
 import ConversationHistory, { Conversation } from './ConversationHistory';
 import ApiKeyInput from './ApiKeyInput';
 import CharacterSettings, { CharacterConfig } from './CharacterSettings';
