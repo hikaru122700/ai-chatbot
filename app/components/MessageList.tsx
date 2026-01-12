@@ -2,11 +2,13 @@
 
 import { useEffect, useRef } from 'react';
 import MarkdownRenderer from './MarkdownRenderer';
+import { ImageAttachment } from './MessageInput';
 
 export interface Message {
   id?: string;
   role: 'user' | 'assistant';
   content: string;
+  images?: ImageAttachment[];
   createdAt?: Date;
 }
 

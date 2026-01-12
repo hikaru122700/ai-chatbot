@@ -64,7 +64,7 @@ export default function ChatInterface() {
     }
   };
 
-  const handleSendMessage = async (message: string) => {
+  const handleSendMessage = async (message: string, images?: ImageAttachment[]) => {
     if (!apiKey) {
       setError('APIキーを設定してください');
       setShowSettings(true);
@@ -77,6 +77,7 @@ export default function ChatInterface() {
     const userMessage: Message = {
       role: 'user',
       content: message,
+      images: images,
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -91,6 +92,7 @@ export default function ChatInterface() {
         body: JSON.stringify({
           conversationId: currentConversationId,
           message,
+          images: images,
           systemPrompt: character ? `あなたは「${character.name}」という名前のAIアシスタントです。
 性格: ${character.personality}
 話し方: ${character.speechStyle}
