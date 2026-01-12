@@ -90,9 +90,44 @@ export default function MessageList({ messages, isLoading }: MessageListProps) {
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
       <div className="max-w-4xl mx-auto space-y-4">
         {messages.length === 0 && !isLoading && (
-          <div className="text-center text-gray-500 dark:text-gray-400 mt-20">
-            <h2 className="text-2xl font-bold mb-2">AI Chatbot</h2>
-            <p>メッセージを入力して会話を開始してください。</p>
+          <div className="text-center mt-20 animate-fade-in-up">
+            <div className="text-6xl mb-4 animate-float">
+              <span className="inline-block animate-wiggle">
+                {'('}
+              </span>
+              <span className="inline-block">
+                {'^'}
+              </span>
+              <span className="inline-block">
+                {'.'}
+              </span>
+              <span className="inline-block">
+                {'^'}
+              </span>
+              <span className="inline-block animate-wiggle">
+                {')'}
+              </span>
+            </div>
+            <h2 className="text-3xl font-bold mb-3 gradient-text">
+              AIアシスタント
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
+              こんにちは！何でも聞いてください
+            </p>
+            <div className="flex flex-wrap justify-center gap-2 max-w-md mx-auto">
+              <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm animate-bounce-in">
+                画像解析
+              </span>
+              <span className="px-3 py-1 bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 rounded-full text-sm animate-bounce-in" style={{animationDelay: '0.1s'}}>
+                音声入力
+              </span>
+              <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm animate-bounce-in" style={{animationDelay: '0.2s'}}>
+                PDF読み込み
+              </span>
+              <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-sm animate-bounce-in" style={{animationDelay: '0.3s'}}>
+                読み上げ
+              </span>
+            </div>
           </div>
         )}
 
