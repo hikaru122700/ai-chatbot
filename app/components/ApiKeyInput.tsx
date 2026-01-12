@@ -12,7 +12,9 @@ export default function ApiKeyInput({ onApiKeyChange }: ApiKeyInputProps) {
   const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
-    const savedKey = localStorage.getItem('openai_api_key');
+    // Use sessionStorage instead of localStorage for security
+    // SessionStorage is cleared when browser is closed and not shared between tabs
+    const savedKey = sessionStorage.getItem('openai_api_key');
     if (savedKey) {
       setApiKey(savedKey);
       setIsSaved(true);
@@ -22,14 +24,14 @@ export default function ApiKeyInput({ onApiKeyChange }: ApiKeyInputProps) {
 
   const handleSave = () => {
     if (apiKey.trim()) {
-      localStorage.setItem('openai_api_key', apiKey.trim());
+      sessionStorage.setItem('openai_api_key', apiKey.trim());
       setIsSaved(true);
       onApiKeyChange(apiKey.trim());
     }
   };
 
   const handleClear = () => {
-    localStorage.removeItem('openai_api_key');
+    sessionStorage.removeItem('openai_api_key');
     setApiKey('');
     setIsSaved(false);
     onApiKeyChange(null);
