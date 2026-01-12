@@ -176,12 +176,17 @@ export default function MessageList({ messages, isLoading }: MessageListProps) {
         ))}
 
         {isLoading && (
-          <div className="flex justify-start">
-            <div className="max-w-[80%] rounded-lg px-4 py-3 bg-gray-100 dark:bg-gray-800">
-              <div className="flex space-x-2">
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce-delay-100"></div>
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce-delay-200"></div>
+          <div className="flex justify-start animate-slide-in-left">
+            <div className="max-w-[80%] rounded-2xl px-5 py-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md">
+              <div className="flex items-center space-x-3">
+                <div className="flex space-x-1">
+                  <div className="w-2.5 h-2.5 bg-purple-500 rounded-full animate-bounce"></div>
+                  <div className="w-2.5 h-2.5 bg-pink-500 rounded-full animate-bounce animate-bounce-delay-100"></div>
+                  <div className="w-2.5 h-2.5 bg-purple-500 rounded-full animate-bounce animate-bounce-delay-200"></div>
+                </div>
+                <span className="text-sm text-gray-400 dark:text-gray-500">
+                  考え中...
+                </span>
               </div>
             </div>
           </div>
