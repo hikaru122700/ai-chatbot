@@ -193,6 +193,67 @@ export default function MessageInput({
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleDocSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    setIsProcessingFile(true);
+
+    for (const file of Array.from(files)) {
+      try {
+        let content = '';
+
+        if (file.type === 'application/pdf') {
+          // PDF parsing using pdfjs-dist
+          const pdfjsLib = await import('pdfjs-dist');
+          pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          const textParts: string[] = [];
+
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items
+              .map((item: { str?: string }) => item.str || '')
+              .join(' ');
+            textParts.push(pageText);
+          }
+
+          content = textParts.join('\n\n');
+        } else if (file.type === 'text/plain' || file.name.endsWith('.txt') || file.name.endsWith('.md')) {
+          // Plain text files
+          content = await file.text();
+        } else {
+          continue; // Skip unsupported files
+        }
+
+        if (content.trim()) {
+          setDocuments((prev) => [
+            ...prev,
+            {
+              name: file.name,
+              content: content,
+              type: file.type || 'text/plain',
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error('Failed to process file:', file.name, error);
+      }
+    }
+
+    setIsProcessingFile(false);
+    if (docInputRef.current) {
+      docInputRef.current.value = '';
+    }
+  };
+
+  const removeDocument = (index: number) => {
+    setDocuments((prev) => prev.filter((_, i) => i !== index));
+  };
+
   return (
     <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
       {/* Image previews */}
