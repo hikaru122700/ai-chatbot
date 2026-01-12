@@ -280,7 +280,7 @@ export async function POST(request: NextRequest) {
     } else {
       openaiMessages.push({
         role: 'user',
-        content: message,
+        content: message || '',
       });
     }
 
