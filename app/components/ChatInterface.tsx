@@ -149,15 +149,28 @@ export default function ChatInterface() {
     }
   };
 
+  // リトライ関数
+  const handleRetry = useCallback(() => {
+    if (lastMessageRef.current) {
+      const { message, images, documents } = lastMessageRef.current;
+      handleSendMessage(message, images, documents);
+    }
+  }, []);
+
   const handleSendMessage = async (message: string, images?: ImageAttachment[], documents?: DocumentAttachment[]) => {
     if (!apiKey) {
       setError('APIキーを設定してください');
+      setErrorInfo({ type: 'auth', message: 'APIキーを設定してください', canRetry: false });
       setShowSettings(true);
       return;
     }
 
+    // リトライ用に最後のメッセージを保存
+    lastMessageRef.current = { message, images, documents };
+
     setIsLoading(true);
     setError(null);
+    setErrorInfo(null);
 
     // Build display message with document info
     let displayMessage = message;
