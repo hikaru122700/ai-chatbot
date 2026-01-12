@@ -102,6 +102,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // メッセージ長の検証
+    if (hasMessage && message.length > MAX_MESSAGE_LENGTH) {
+      return NextResponse.json(
+        { error: `メッセージが長すぎます（最大${MAX_MESSAGE_LENGTH}文字）` },
+        { status: 400 }
+      );
+    }
+
     // 画像の検証
     let validatedImages: ImageData[] = [];
     if (hasImages) {
