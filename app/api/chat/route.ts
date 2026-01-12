@@ -125,6 +125,7 @@ export async function POST(request: NextRequest) {
       model: MODEL_NAME,
       messages: openaiMessages as OpenAI.Chat.ChatCompletionMessageParam[],
       stream: true,
+      max_tokens: 4096,
     });
 
     let assistantResponse = '';
