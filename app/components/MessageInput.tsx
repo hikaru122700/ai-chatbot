@@ -354,6 +354,26 @@ export default function MessageInput({
           </button>
         )}
 
+        {/* Document upload button */}
+        <input
+          type="file"
+          ref={docInputRef}
+          onChange={handleDocSelect}
+          accept=".pdf,.txt,.md,text/plain,application/pdf"
+          multiple
+          className="hidden"
+        />
+        <button
+          onClick={() => docInputRef.current?.click()}
+          disabled={disabled || isProcessingFile}
+          className="p-3 text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          title="PDF/テキストを添付"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </button>
+
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -365,7 +385,7 @@ export default function MessageInput({
         />
         <button
           onClick={handleSubmit}
-          disabled={disabled || (!input.trim() && images.length === 0)}
+          disabled={disabled || (!input.trim() && images.length === 0 && documents.length === 0)}
           className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
         >
           送信
