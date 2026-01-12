@@ -6,6 +6,76 @@ import { prisma } from '@/app/lib/db';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+// セキュリティ: 画像検証の定数
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+const MAX_BASE64_LENGTH = Math.ceil(MAX_IMAGE_SIZE_BYTES * 1.37); // Base64は約37%大きくなる
+const MAX_IMAGES_COUNT = 5;
+
+// 画像検証関数
+interface ImageData {
+  base64: string;
+  type: string;
+  name?: string;
+}
+
+function validateImages(images: unknown): { valid: boolean; error?: string; images?: ImageData[] } {
+  if (!Array.isArray(images)) {
+    return { valid: false, error: '画像データが不正です' };
+  }
+
+  if (images.length > MAX_IMAGES_COUNT) {
+    return { valid: false, error: `画像は最大${MAX_IMAGES_COUNT}枚までです` };
+  }
+
+  const validatedImages: ImageData[] = [];
+
+  for (let i = 0; i < images.length; i++) {
+    const img = images[i];
+
+    // 構造チェック
+    if (!img || typeof img !== 'object') {
+      return { valid: false, error: `画像${i + 1}のデータが不正です` };
+    }
+
+    const { base64, type } = img as { base64?: unknown; type?: unknown };
+
+    // MIMEタイプチェック
+    if (typeof type !== 'string' || !ALLOWED_IMAGE_TYPES.includes(type)) {
+      return {
+        valid: false,
+        error: `画像${i + 1}の形式が非対応です（対応: JPEG, PNG, GIF, WebP）`,
+      };
+    }
+
+    // Base64文字列チェック
+    if (typeof base64 !== 'string' || base64.length === 0) {
+      return { valid: false, error: `画像${i + 1}のデータが空です` };
+    }
+
+    // サイズチェック
+    if (base64.length > MAX_BASE64_LENGTH) {
+      return {
+        valid: false,
+        error: `画像${i + 1}のサイズが大きすぎます（最大5MB）`,
+      };
+    }
+
+    // Base64形式の簡易検証
+    if (!/^[A-Za-z0-9+/]*={0,2}$/.test(base64)) {
+      return { valid: false, error: `画像${i + 1}のBase64データが不正です` };
+    }
+
+    validatedImages.push({
+      base64,
+      type,
+      name: typeof img.name === 'string' ? img.name : undefined,
+    });
+  }
+
+  return { valid: true, images: validatedImages };
+}
+
 export async function POST(request: NextRequest) {
   try {
     const apiKey = request.headers.get('X-API-Key');
