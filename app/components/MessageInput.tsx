@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, KeyboardEvent, useRef } from 'react';
+import { useState, KeyboardEvent, useRef, useEffect } from 'react';
 
 export interface ImageAttachment {
   base64: string;
@@ -13,13 +13,116 @@ interface MessageInputProps {
   disabled: boolean;
 }
 
+// TypeScript declarations for Web Speech API
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+  resultIndex: number;
+}
+
+interface SpeechRecognitionResultList {
+  length: number;
+  item(index: number): SpeechRecognitionResult;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionResult {
+  length: number;
+  item(index: number): SpeechRecognitionAlternative;
+  [index: number]: SpeechRecognitionAlternative;
+  isFinal: boolean;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: Event) => void) | null;
+  onend: (() => void) | null;
+  start(): void;
+  stop(): void;
+  abort(): void;
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition: new () => SpeechRecognition;
+    webkitSpeechRecognition: new () => SpeechRecognition;
+  }
+}
+
 export default function MessageInput({
   onSendMessage,
   disabled,
 }: MessageInputProps) {
   const [input, setInput] = useState('');
   const [images, setImages] = useState<ImageAttachment[]>([]);
+  const [isListening, setIsListening] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+
+  useEffect(() => {
+    // Check if speech recognition is supported
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      setSpeechSupported(!!SpeechRecognition);
+
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'ja-JP';
+
+        recognition.onresult = (event: SpeechRecognitionEvent) => {
+          let transcript = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+          }
+          setInput((prev) => {
+            // If this is a final result, append to existing input
+            if (event.results[event.results.length - 1].isFinal) {
+              return prev + transcript;
+            }
+            return prev;
+          });
+        };
+
+        recognition.onerror = () => {
+          setIsListening(false);
+        };
+
+        recognition.onend = () => {
+          setIsListening(false);
+        };
+
+        recognitionRef.current = recognition;
+      }
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+    };
+  }, []);
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) return;
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
+  };
 
   const handleSubmit = () => {
     if ((input.trim() || images.length > 0) && !disabled) {
