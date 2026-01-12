@@ -102,6 +102,7 @@ export default function ChatInterface() {
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [character, setCharacter] = useState<CharacterConfig | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const lastMessageRef = useRef<LastMessageData | null>(null);
 
   const handleApiKeyChange = useCallback((key: string | null) => {
@@ -321,6 +322,8 @@ export default function ChatInterface() {
         onSelectConversation={loadConversation}
         onNewConversation={handleNewConversation}
         onDeleteConversation={handleDeleteConversation}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
 
       <div className="flex-1 flex flex-col">
