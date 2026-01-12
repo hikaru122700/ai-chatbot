@@ -15,7 +15,7 @@ export interface DocumentAttachment {
 }
 
 interface MessageInputProps {
-  onSendMessage: (message: string, images?: ImageAttachment[]) => void;
+  onSendMessage: (message: string, images?: ImageAttachment[], documents?: DocumentAttachment[]) => void;
   disabled: boolean;
 }
 
@@ -68,9 +68,12 @@ export default function MessageInput({
 }: MessageInputProps) {
   const [input, setInput] = useState('');
   const [images, setImages] = useState<ImageAttachment[]>([]);
+  const [documents, setDocuments] = useState<DocumentAttachment[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
+  const [isProcessingFile, setIsProcessingFile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const docInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   useEffect(() => {
