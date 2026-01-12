@@ -1,22 +1,36 @@
 # AI Chatbot
 
-OpenAI API (GPT-4o) を使用した学習用AIチャットボットアプリケーションです。
+OpenAI API (GPT-4o) を使用したAIチャットボットアプリケーションです。
 
 ## 特徴
 
+### 基本機能
 - **リアルタイムストリーミング**: GPT-4oの応答をリアルタイムで表示
 - **会話履歴管理**: データベースに会話を永続的に保存
 - **レスポンシブデザイン**: モバイル、タブレット、デスクトップに対応
 - **ダークモード対応**: 目に優しい表示切り替え
 - **Markdownレンダリング**: コードブロックやリストなど、リッチな表示に対応
 
+### オリジナル機能
+- **キャラクター設定**: 名前、アバター、性格、話し方をカスタマイズ可能
+- **画像アップロード・解析**: GPT-4o Visionで画像の内容を理解・説明
+- **音声入力**: Web Speech APIによる音声認識（日本語対応）
+- **音声読み上げ**: アシスタントのメッセージを読み上げ（TTS）
+- **PDF・文書アップロード**: PDF、テキスト、Markdownファイルの内容を解析
+- **楽しいUIアニメーション**: メッセージのスライドイン、グラデーション、ローディング演出
+
+### セキュリティ
+- **ユーザー側APIキー管理**: サーバーにAPIキーを保存せず、ユーザーが自分のキーを使用
+- **SessionStorage保存**: ブラウザを閉じるとAPIキーが自動削除
+
 ## 技術スタック
 
 - **フロントエンド**: Next.js 15, React 19, TypeScript, Tailwind CSS
 - **バックエンド**: Next.js API Routes
-- **AI API**: OpenAI API (GPT-4o)
-- **データベース**: PostgreSQL (Cloud SQL / Vercel Postgres)
-- **ORM**: Prisma
+- **AI API**: OpenAI API (GPT-4o, GPT-4o Vision)
+- **データベース**: PostgreSQL (Neon / Vercel Postgres)
+- **ORM**: Prisma 6.x
+- **PDF解析**: pdfjs-dist
 
 ## セットアップ
 
@@ -31,18 +45,12 @@ npm install
 `.env.local`ファイルを作成し、以下の環境変数を設定してください：
 
 ```env
-# OpenAI API Key
-OPENAI_API_KEY=your-api-key-here
-
 # Database URLs (PostgreSQL)
-POSTGRES_URL=your-postgres-url
-POSTGRES_PRISMA_URL=your-postgres-prisma-url
-POSTGRES_URL_NON_POOLING=your-postgres-non-pooling-url
-POSTGRES_USER=your-user
-POSTGRES_HOST=your-host
-POSTGRES_PASSWORD=your-password
-POSTGRES_DATABASE=your-database
+DATABASE_URL=your-postgres-url
+DATABASE_URL_UNPOOLED=your-postgres-direct-url
 ```
+
+> **注意**: `OPENAI_API_KEY`はサーバー側では不要です。ユーザーがブラウザで自分のAPIキーを入力します。
 
 ### 3. データベースのセットアップ
 
@@ -50,7 +58,7 @@ POSTGRES_DATABASE=your-database
 # Prisma Clientを生成
 npx prisma generate
 
-# マイグレーションを実行（データベースが接続されている場合）
+# マイグレーションを実行
 npx prisma migrate dev --name init
 ```
 
@@ -62,31 +70,22 @@ npm run dev
 
 ブラウザで http://localhost:3000 を開いてください。
 
+## 使い方
+
+1. **APIキーの設定**: 右上の歯車アイコンをクリックし、OpenAI APIキーを入力
+2. **キャラクター設定**: 左上のキャラクターボタンから名前・性格をカスタマイズ
+3. **メッセージ送信**: テキストを入力してEnterまたは送信ボタンをクリック
+4. **画像添付**: 画像アイコンをクリックして画像を選択
+5. **音声入力**: マイクアイコンをクリックして話す
+6. **PDF添付**: 文書アイコンをクリックしてPDF/テキストファイルを選択
+7. **読み上げ**: アシスタントのメッセージのスピーカーアイコンをクリック
+
 ## デプロイ
-
-### Google Cloud Platform (GCP) へのデプロイ ⭐ 推奨
-
-**クイックスタート**: [QUICKSTART-GCP.md](./QUICKSTART-GCP.md) を参照
-
-1. [Google Cloud Console](https://console.cloud.google.com/)を開く
-2. Cloud Shellをアクティブにする
-3. プロジェクトファイルをアップロード
-4. デプロイスクリプトを実行
-
-```bash
-chmod +x deploy-gcp.sh
-./deploy-gcp.sh
-```
-
-詳細な手順: [DEPLOYMENT.md](./DEPLOYMENT.md)
-
-**プロジェクトID**: `bright-practice-444611-p4`
-**推定コスト**: 月$10-20
 
 ### Vercelへのデプロイ
 
 1. Vercelにプロジェクトをインポート
-2. Vercel Postgresデータベースを作成（Neon推奨）
+2. Neonでデータベースを作成し、環境変数を設定
 3. デプロイ
 
 ```bash
@@ -100,41 +99,42 @@ npm run deploy
 - GitHubにプッシュ
 - Vercelに本番デプロイ
 
-**手動デプロイの場合:**
-```bash
-# Vercel CLIを使用する場合
-vercel
+### 環境変数（Vercel）
 
-# 本番デプロイ
-vercel --prod
-```
+| 変数名 | 説明 |
+|--------|------|
+| `DATABASE_URL` | PostgreSQL接続URL（プーリング） |
+| `DATABASE_URL_UNPOOLED` | PostgreSQL直接接続URL |
 
 ## プロジェクト構成
 
 ```
-chatbot/
+ai-chatbot/
 ├── app/
 │   ├── api/
 │   │   ├── chat/
-│   │   │   └── route.ts          # チャットAPI（ストリーミング）
+│   │   │   └── route.ts              # チャットAPI（ストリーミング）
 │   │   └── conversations/
-│   │       ├── route.ts           # 会話一覧取得
+│   │       ├── route.ts              # 会話一覧取得
 │   │       └── [id]/
-│   │           └── route.ts       # 特定会話の取得・削除
+│   │           └── route.ts          # 特定会話の取得・削除
 │   ├── components/
-│   │   ├── ChatInterface.tsx      # メインチャットUI
-│   │   ├── MessageList.tsx        # メッセージ一覧
-│   │   ├── MessageInput.tsx       # 入力フォーム
-│   │   ├── ConversationHistory.tsx# 会話履歴サイドバー
-│   │   └── MarkdownRenderer.tsx   # Markdownレンダラー
+│   │   ├── ChatInterface.tsx         # メインチャットUI
+│   │   ├── MessageList.tsx           # メッセージ一覧（TTS含む）
+│   │   ├── MessageInput.tsx          # 入力フォーム（画像・音声・PDF）
+│   │   ├── ConversationHistory.tsx   # 会話履歴サイドバー
+│   │   ├── MarkdownRenderer.tsx      # Markdownレンダラー
+│   │   ├── ApiKeyInput.tsx           # APIキー入力
+│   │   └── CharacterSettings.tsx     # キャラクター設定
 │   ├── lib/
-│   │   ├── anthropic.ts           # Claude APIクライアント
-│   │   ├── db.ts                  # データベース接続
-│   │   └── utils.ts               # ユーティリティ関数
+│   │   ├── openai.ts                 # OpenAI設定
+│   │   ├── db.ts                     # データベース接続
+│   │   └── utils.ts                  # ユーティリティ関数
+│   ├── globals.css                   # グローバルスタイル・アニメーション
 │   ├── layout.tsx
-│   └── page.tsx                   # メインページ
+│   └── page.tsx                      # メインページ
 ├── prisma/
-│   └── schema.prisma              # データベーススキーマ
+│   └── schema.prisma                 # データベーススキーマ
 └── public/
 ```
 
@@ -144,11 +144,18 @@ chatbot/
 
 チャットメッセージを送信し、ストリーミングレスポンスを受信します。
 
+**ヘッダー**:
+```
+X-API-Key: your-openai-api-key
+```
+
 **リクエスト**:
 ```json
 {
-  "conversationId": "uuid-string",  // オプション
-  "message": "ユーザーのメッセージ"
+  "conversationId": "uuid-string",
+  "message": "ユーザーのメッセージ",
+  "images": [{"base64": "...", "type": "image/jpeg", "name": "photo.jpg"}],
+  "systemPrompt": "キャラクター設定プロンプト"
 }
 ```
 
@@ -166,38 +173,42 @@ chatbot/
 
 特定の会話を削除します。
 
-## 開発
-
-### データベースの確認
+## 開発コマンド
 
 ```bash
-# Prisma Studioを起動
-npx prisma studio
-```
+# 開発サーバー起動
+npm run dev
 
-### ビルド
-
-```bash
+# ビルド
 npm run build
-```
 
-### Lint
-
-```bash
+# Lint
 npm run lint
+
+# Prisma Studio（DB確認）
+npx prisma studio
+
+# デプロイ（GitHub + Vercel）
+npm run deploy
 ```
 
 ## トラブルシューティング
 
+### APIキーエラー
+- 設定モーダルでOpenAI APIキーが正しく入力されているか確認
+- APIキーの有効期限やクレジット残高を確認
+
 ### データベース接続エラー
+- `.env.local`の`DATABASE_URL`が正しく設定されているか確認
+- Neon/Vercel Postgresが起動しているか確認
 
-- `.env.local`の環境変数が正しく設定されているか確認してください
-- PostgreSQLデータベースが起動しているか確認してください
+### 画像アップロードエラー
+- 画像サイズが大きすぎないか確認（推奨: 5MB以下）
+- 対応形式: JPEG, PNG, GIF, WebP
 
-### Claude APIエラー
-
-- `ANTHROPIC_API_KEY`が正しく設定されているか確認してください
-- APIキーの有効期限やクレジット残高を確認してください
+### PDF解析エラー
+- PDFにテキストが含まれているか確認（画像のみのPDFは非対応）
+- ファイルが破損していないか確認
 
 ## ライセンス
 
