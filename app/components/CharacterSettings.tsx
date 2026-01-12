@@ -33,6 +33,60 @@ const SPEECH_STYLE_OPTIONS = [
   { value: '関西弁', label: '関西弁（〜やで！）' },
 ];
 
+// セキュリティ: 名前フィールドの制限
+const NAME_MAX_LENGTH = 20;
+const NAME_PATTERN = /^[\p{L}\p{N}\s\-_]+$/u; // Unicode文字、数字、スペース、ハイフン、アンダースコアのみ
+
+// プロンプトインジェクション対策用のサニタイズ関数
+function sanitizeName(name: string): string {
+  // 長さ制限
+  let sanitized = name.slice(0, NAME_MAX_LENGTH);
+  // 危険な文字・パターンを除去
+  sanitized = sanitized
+    .replace(/[<>{}[\]\\]/g, '') // 特殊文字除去
+    .replace(/\n|\r/g, '') // 改行除去
+    .replace(/\s+/g, ' ') // 連続スペースを1つに
+    .trim();
+  // パターンに合わない場合はデフォルト値を返す
+  if (!sanitized || !NAME_PATTERN.test(sanitized)) {
+    return DEFAULT_CHARACTER.name;
+  }
+  return sanitized;
+}
+
+// localStorage読み込み時の検証関数
+function validateConfig(parsed: unknown): CharacterConfig {
+  if (!parsed || typeof parsed !== 'object') {
+    return DEFAULT_CHARACTER;
+  }
+
+  const config = parsed as Record<string, unknown>;
+
+  // 名前のサニタイズ
+  const name = typeof config.name === 'string'
+    ? sanitizeName(config.name)
+    : DEFAULT_CHARACTER.name;
+
+  // アバターのホワイトリスト検証
+  const avatar = typeof config.avatar === 'string' && AVATAR_OPTIONS.includes(config.avatar)
+    ? config.avatar
+    : DEFAULT_CHARACTER.avatar;
+
+  // 性格のホワイトリスト検証
+  const personality = typeof config.personality === 'string' &&
+    PERSONALITY_OPTIONS.some(opt => opt.value === config.personality)
+    ? config.personality
+    : DEFAULT_CHARACTER.personality;
+
+  // 話し方のホワイトリスト検証
+  const speechStyle = typeof config.speechStyle === 'string' &&
+    SPEECH_STYLE_OPTIONS.some(opt => opt.value === config.speechStyle)
+    ? config.speechStyle
+    : DEFAULT_CHARACTER.speechStyle;
+
+  return { name, avatar, personality, speechStyle };
+}
+
 interface CharacterSettingsProps {
   onCharacterChange: (config: CharacterConfig) => void;
 }
