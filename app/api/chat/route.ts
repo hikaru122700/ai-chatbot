@@ -19,7 +19,10 @@ export async function POST(request: NextRequest) {
 
     const { conversationId, message, images, systemPrompt } = await request.json();
 
-    if ((!message || typeof message !== 'string') && (!images || images.length === 0)) {
+    const hasMessage = message && typeof message === 'string' && message.trim().length > 0;
+    const hasImages = images && Array.isArray(images) && images.length > 0;
+
+    if (!hasMessage && !hasImages) {
       return NextResponse.json(
         { error: 'Message or images are required' },
         { status: 400 }
@@ -32,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     // Create new conversation if no ID provided
     if (!currentConversationId) {
-      const title = message
+      const title = hasMessage
         ? message.substring(0, 50) + (message.length > 50 ? '...' : '')
         : '画像付きメッセージ';
       const conversation = await prisma.conversation.create({
@@ -42,8 +45,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Save user message (with image info as text for history)
-    const savedContent = images && images.length > 0
-      ? `${message || ''}${message ? '\n' : ''}[画像 ${images.length}枚添付]`
+    const savedContent = hasImages
+      ? `${hasMessage ? message : ''}${hasMessage ? '\n' : ''}[画像 ${images.length}枚添付]`
       : message;
 
     await prisma.message.create({
