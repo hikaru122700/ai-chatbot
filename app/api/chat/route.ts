@@ -114,9 +114,17 @@ export async function POST(request: NextRequest) {
           );
 
           controller.close();
-        } catch (error) {
+        } catch (error: any) {
           console.error('Streaming error:', error);
-          controller.error(error);
+          controller.enqueue(
+            encoder.encode(
+              JSON.stringify({
+                type: 'error',
+                error: error?.message || 'Unknown error occurred',
+              }) + '\n'
+            )
+          );
+          controller.close();
         }
       },
     });

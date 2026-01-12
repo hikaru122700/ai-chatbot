@@ -136,6 +136,9 @@ export default function ChatInterface() {
                   setCurrentConversationId(newConversationId);
                 }
                 loadConversations();
+              } else if (data.type === 'error') {
+                setError(data.error || 'エラーが発生しました');
+                setMessages((prev) => prev.slice(0, -1));
               }
             } catch (err) {
               console.error('Failed to parse chunk:', err);
