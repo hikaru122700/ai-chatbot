@@ -216,7 +216,8 @@ export default function MessageInput({
             const page = await pdf.getPage(i);
             const textContent = await page.getTextContent();
             const pageText = textContent.items
-              .map((item: { str?: string }) => item.str || '')
+              .filter((item): item is { str: string } => 'str' in item)
+              .map((item) => item.str)
               .join(' ');
             textParts.push(pageText);
           }
