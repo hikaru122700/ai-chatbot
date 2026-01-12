@@ -206,15 +206,17 @@ export default function MessageInput({
         if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
           // PDF parsing using pdfjs-dist
           try {
-            const pdfjsLib = await import('pdfjs-dist');
+            // Dynamic import with legacy build for better compatibility
+            const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
 
-            // Set worker source - use local worker or CDN
-            if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-              pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
-            }
-
+            // Disable worker for simpler setup
             const arrayBuffer = await file.arrayBuffer();
-            const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+            const loadingTask = pdfjsLib.getDocument({
+              data: arrayBuffer,
+              useWorkerFetch: false,
+              isEvalSupported: false,
+              useSystemFonts: true,
+            });
             const pdf = await loadingTask.promise;
             const textParts: string[] = [];
 
