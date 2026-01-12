@@ -8,6 +8,12 @@ export interface ImageAttachment {
   name: string;
 }
 
+export interface DocumentAttachment {
+  name: string;
+  content: string;
+  type: string;
+}
+
 interface MessageInputProps {
   onSendMessage: (message: string, images?: ImageAttachment[]) => void;
   disabled: boolean;
