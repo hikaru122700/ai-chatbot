@@ -98,17 +98,35 @@ export default function CharacterSettings({ onCharacterChange }: CharacterSettin
   useEffect(() => {
     const saved = localStorage.getItem('character_config');
     if (saved) {
-      const parsed = JSON.parse(saved);
-      setConfig(parsed);
-      onCharacterChange(parsed);
+      try {
+        const parsed = JSON.parse(saved);
+        const validated = validateConfig(parsed);
+        setConfig(validated);
+        onCharacterChange(validated);
+      } catch {
+        // JSON解析エラー時はデフォルト値を使用
+        onCharacterChange(DEFAULT_CHARACTER);
+      }
     } else {
       onCharacterChange(DEFAULT_CHARACTER);
     }
   }, [onCharacterChange]);
 
   const handleSave = () => {
-    localStorage.setItem('character_config', JSON.stringify(config));
-    onCharacterChange(config);
+    // 保存前にサニタイズ
+    const sanitizedConfig: CharacterConfig = {
+      name: sanitizeName(config.name),
+      avatar: AVATAR_OPTIONS.includes(config.avatar) ? config.avatar : DEFAULT_CHARACTER.avatar,
+      personality: PERSONALITY_OPTIONS.some(opt => opt.value === config.personality)
+        ? config.personality
+        : DEFAULT_CHARACTER.personality,
+      speechStyle: SPEECH_STYLE_OPTIONS.some(opt => opt.value === config.speechStyle)
+        ? config.speechStyle
+        : DEFAULT_CHARACTER.speechStyle,
+    };
+    localStorage.setItem('character_config', JSON.stringify(sanitizedConfig));
+    setConfig(sanitizedConfig);
+    onCharacterChange(sanitizedConfig);
     setIsOpen(false);
   };
 
