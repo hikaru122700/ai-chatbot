@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
     // Stream response from OpenAI
     const stream = await openai.chat.completions.create({
       model: MODEL_NAME,
-      messages: openaiMessages,
+      messages: openaiMessages as OpenAI.Chat.ChatCompletionMessageParam[],
       stream: true,
     });
 
