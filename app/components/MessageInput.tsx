@@ -400,6 +400,7 @@ export default function MessageInput({
           accept="image/*"
           multiple
           className="hidden"
+          aria-label="画像ファイルを選択"
         />
         <button
           onClick={() => fileInputRef.current?.click()}
@@ -439,6 +440,7 @@ export default function MessageInput({
           accept=".pdf,.txt,.md,text/plain,application/pdf"
           multiple
           className="hidden"
+          aria-label="PDF・テキストファイルを選択"
         />
         <button
           onClick={() => docInputRef.current?.click()}
