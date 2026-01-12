@@ -12,6 +12,9 @@ const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 const MAX_BASE64_LENGTH = Math.ceil(MAX_IMAGE_SIZE_BYTES * 1.37); // Base64は約37%大きくなる
 const MAX_IMAGES_COUNT = 5;
 
+// メッセージ長の制限
+const MAX_MESSAGE_LENGTH = 8000;
+
 // 画像検証関数
 interface ImageData {
   base64: string;
