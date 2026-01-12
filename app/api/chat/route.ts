@@ -172,8 +172,8 @@ export async function POST(request: NextRequest) {
     if (hasImages) {
       const contentParts: Array<{type: 'text', text: string} | {type: 'image_url', image_url: {url: string}}> = [];
 
-      // Add images first
-      images.forEach((img: {base64: string, type: string}) => {
+      // Add validated images first
+      validatedImages.forEach((img) => {
         contentParts.push({
           type: 'image_url',
           image_url: {
