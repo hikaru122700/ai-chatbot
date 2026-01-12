@@ -203,10 +203,8 @@ export default function ChatInterface() {
       />
 
       <div className="flex-1 flex flex-col">
-        <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-            AI Chat
-          </h1>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-800">
+          <CharacterSettings onCharacterChange={handleCharacterChange} />
           <button
             onClick={() => setShowSettings(!showSettings)}
             className={`p-2 rounded-lg transition-colors ${
