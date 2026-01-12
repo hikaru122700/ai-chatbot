@@ -164,20 +164,47 @@ export default function MessageInput({
     const files = e.target.files;
     if (!files) return;
 
+    setFileError(null);
+
+    // 画像数チェック
+    const totalImages = images.length + files.length;
+    if (totalImages > MAX_IMAGES_COUNT) {
+      setFileError(`画像は最大${MAX_IMAGES_COUNT}枚までです（現在${images.length}枚）`);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     const newImages: ImageAttachment[] = [];
 
     for (const file of Array.from(files)) {
-      if (file.type.startsWith('image/')) {
+      // MIMEタイプチェック
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        setFileError(`非対応の画像形式です: ${file.name}（対応: JPEG, PNG, GIF, WebP）`);
+        continue;
+      }
+
+      // サイズチェック
+      if (file.size > MAX_IMAGE_SIZE_BYTES) {
+        setFileError(`画像サイズが大きすぎます: ${file.name}（最大${MAX_IMAGE_SIZE_MB}MB）`);
+        continue;
+      }
+
+      try {
         const base64 = await fileToBase64(file);
         newImages.push({
           base64,
           type: file.type,
           name: file.name,
         });
+      } catch (error) {
+        console.error('Failed to process image:', file.name, error);
+        setFileError(`画像の処理に失敗しました: ${file.name}`);
       }
     }
 
-    setImages((prev) => [...prev, ...newImages]);
+    if (newImages.length > 0) {
+      setImages((prev) => [...prev, ...newImages]);
+    }
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
