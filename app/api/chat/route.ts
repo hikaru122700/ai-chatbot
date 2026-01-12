@@ -79,6 +79,53 @@ function validateImages(images: unknown): { valid: boolean; error?: string; imag
   return { valid: true, images: validatedImages };
 }
 
+// リクエストボディの型定義
+interface ChatRequestBody {
+  conversationId?: string;
+  message?: string;
+  images?: unknown[];
+  systemPrompt?: string;
+}
+
+// リクエストボディの検証関数
+function validateRequestBody(body: unknown): { valid: boolean; error?: string; data?: ChatRequestBody } {
+  if (!body || typeof body !== 'object') {
+    return { valid: false, error: 'リクエストボディが不正です' };
+  }
+
+  const data = body as Record<string, unknown>;
+
+  // conversationIdの検証（オプショナル、string型）
+  if (data.conversationId !== undefined && typeof data.conversationId !== 'string') {
+    return { valid: false, error: 'conversationIdは文字列である必要があります' };
+  }
+
+  // messageの検証（オプショナル、string型）
+  if (data.message !== undefined && typeof data.message !== 'string') {
+    return { valid: false, error: 'messageは文字列である必要があります' };
+  }
+
+  // imagesの検証（オプショナル、配列型）
+  if (data.images !== undefined && !Array.isArray(data.images)) {
+    return { valid: false, error: 'imagesは配列である必要があります' };
+  }
+
+  // systemPromptの検証（オプショナル、string型）
+  if (data.systemPrompt !== undefined && typeof data.systemPrompt !== 'string') {
+    return { valid: false, error: 'systemPromptは文字列である必要があります' };
+  }
+
+  return {
+    valid: true,
+    data: {
+      conversationId: data.conversationId as string | undefined,
+      message: data.message as string | undefined,
+      images: data.images as unknown[] | undefined,
+      systemPrompt: data.systemPrompt as string | undefined,
+    },
+  };
+}
+
 export async function POST(request: NextRequest) {
   try {
     const apiKey = request.headers.get('X-API-Key');
@@ -90,7 +137,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { conversationId, message, images, systemPrompt } = await request.json();
+    // JSONパースのエラーハンドリング
+    let requestBody: unknown;
+    try {
+      requestBody = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: 'リクエストボディのJSONパースに失敗しました' },
+        { status: 400 }
+      );
+    }
+
+    // リクエストボディの検証
+    const validation = validateRequestBody(requestBody);
+    if (!validation.valid) {
+      return NextResponse.json(
+        { error: validation.error },
+        { status: 400 }
+      );
+    }
+
+    const { conversationId, message, images, systemPrompt } = validation.data!;
 
     const hasMessage = message && typeof message === 'string' && message.trim().length > 0;
     const hasImages = images && Array.isArray(images) && images.length > 0;
