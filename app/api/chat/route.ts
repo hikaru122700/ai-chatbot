@@ -99,6 +99,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 画像の検証
+    let validatedImages: ImageData[] = [];
+    if (hasImages) {
+      const imageValidation = validateImages(images);
+      if (!imageValidation.valid) {
+        return NextResponse.json(
+          { error: imageValidation.error },
+          { status: 400 }
+        );
+      }
+      validatedImages = imageValidation.images!;
+    }
+
     const openai = new OpenAI({ apiKey });
 
     let currentConversationId = conversationId;
@@ -116,7 +129,7 @@ export async function POST(request: NextRequest) {
 
     // Save user message (with image info as text for history)
     const savedContent = hasImages
-      ? `${hasMessage ? message : ''}${hasMessage ? '\n' : ''}[画像 ${images.length}枚添付]`
+      ? `${hasMessage ? message : ''}${hasMessage ? '\n' : ''}[画像 ${validatedImages.length}枚添付]`
       : message;
 
     await prisma.message.create({
