@@ -8,6 +8,12 @@ export interface ImageAttachment {
   name: string;
 }
 
+// セキュリティ: 画像検証の定数
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const MAX_IMAGE_SIZE_MB = 5;
+const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+const MAX_IMAGES_COUNT = 5;
+
 export interface DocumentAttachment {
   name: string;
   content: string;
@@ -72,6 +78,7 @@ export default function MessageInput({
   const [isListening, setIsListening] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
   const [isProcessingFile, setIsProcessingFile] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
