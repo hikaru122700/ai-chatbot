@@ -483,6 +483,7 @@ export default function MessageInput({
           {/* 文字数カウンター */}
           <div className="flex justify-end mt-1">
             <span
+              id="message-char-count"
               className={`text-xs ${
                 input.length >= MAX_MESSAGE_LENGTH
                   ? 'text-red-600 dark:text-red-400 font-medium'
@@ -490,6 +491,7 @@ export default function MessageInput({
                   ? 'text-yellow-600 dark:text-yellow-400'
                   : 'text-gray-400 dark:text-gray-500'
               }`}
+              aria-live="polite"
             >
               {input.length.toLocaleString()}/{MAX_MESSAGE_LENGTH.toLocaleString()}
               {input.length >= WARNING_MESSAGE_LENGTH && input.length < MAX_MESSAGE_LENGTH && (
@@ -505,6 +507,7 @@ export default function MessageInput({
           onClick={handleSubmit}
           disabled={disabled || (!input.trim() && images.length === 0 && documents.length === 0) || input.length > MAX_MESSAGE_LENGTH}
           className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg self-start"
+          aria-label="メッセージを送信"
         >
           送信
         </button>
