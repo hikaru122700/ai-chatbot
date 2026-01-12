@@ -53,7 +53,23 @@ export default function MessageList({ messages, isLoading }: MessageListProps) {
               }`}
             >
               {message.role === 'user' ? (
-                <p className="whitespace-pre-wrap">{message.content}</p>
+                <div>
+                  {message.images && message.images.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {message.images.map((img, imgIndex) => (
+                        <img
+                          key={imgIndex}
+                          src={`data:${img.type};base64,${img.base64}`}
+                          alt={img.name}
+                          className="max-w-[200px] max-h-[200px] rounded-lg object-cover"
+                        />
+                      ))}
+                    </div>
+                  )}
+                  {message.content && (
+                    <p className="whitespace-pre-wrap">{message.content}</p>
+                  )}
+                </div>
               ) : (
                 <MarkdownRenderer content={message.content} />
               )}
