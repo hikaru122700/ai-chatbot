@@ -4,7 +4,11 @@ const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefi
 
 function createPrismaClient() {
   return new PrismaClient({
-    datasourceUrl: process.env.DATABASE_URL || process.env.POSTGRES_PRISMA_URL,
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL || process.env.POSTGRES_PRISMA_URL,
+      },
+    },
   });
 }
 
