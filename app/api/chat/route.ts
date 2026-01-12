@@ -136,10 +136,11 @@ export async function POST(request: NextRequest) {
         Connection: 'keep-alive',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Chat API error:', error);
+    const message = error?.message || 'Unknown error';
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: message },
       { status: 500 }
     );
   }
