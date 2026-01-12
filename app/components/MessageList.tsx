@@ -101,13 +101,13 @@ export default function MessageList({ messages, isLoading }: MessageListProps) {
             key={message.id || index}
             className={`flex ${
               message.role === 'user' ? 'justify-end' : 'justify-start'
-            }`}
+            } ${message.role === 'user' ? 'animate-slide-in-right' : 'animate-slide-in-left'}`}
           >
             <div
-              className={`max-w-[80%] rounded-lg px-4 py-3 ${
+              className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-md transition-smooth hover-glow ${
                 message.role === 'user'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                  : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700'
               }`}
             >
               {message.role === 'user' ? (
