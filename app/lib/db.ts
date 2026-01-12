@@ -1,25 +1,12 @@
 import { PrismaClient } from '@prisma/client';
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient | undefined };
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
 
-function createPrismaClient() {
-  const url = process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL;
-  if (!url) {
-    throw new Error('Database URL not configured');
-  }
-  return new PrismaClient();
-}
-
-export function getPrisma(): PrismaClient {
+function getPrismaClient() {
   if (!globalForPrisma.prisma) {
-    globalForPrisma.prisma = createPrismaClient();
+    globalForPrisma.prisma = new PrismaClient();
   }
   return globalForPrisma.prisma;
 }
 
-// Lazy proxy for backward compatibility
-export const prisma = new Proxy({} as PrismaClient, {
-  get(_target, prop) {
-    return getPrisma()[prop as keyof PrismaClient];
-  },
-});
+export const prisma = getPrismaClient();
