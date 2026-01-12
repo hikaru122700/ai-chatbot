@@ -16,10 +16,10 @@ echo -e "${BLUE}   停止するには Ctrl+C を押してください${NC}"
 echo ""
 
 while true; do
+    TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+
     # 変更があるかチェック
     if [[ -n $(git status --porcelain) ]]; then
-        TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
-
         echo -e "${YELLOW}📁 変更を検出しました${NC}"
         git add .
 
@@ -31,6 +31,8 @@ while true; do
 
         echo -e "${GREEN}✅ 完了！ ($TIMESTAMP)${NC}"
         echo ""
+    else
+        echo -e "${BLUE}⏳ $TIMESTAMP - 変更なし${NC}"
     fi
 
     sleep 10
