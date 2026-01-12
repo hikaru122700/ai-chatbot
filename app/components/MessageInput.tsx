@@ -450,19 +450,53 @@ export default function MessageInput({
           </svg>
         </button>
 
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="メッセージを入力... (Enter: 送信, Shift+Enter: 改行)"
-          disabled={disabled}
-          className="flex-1 resize-none rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          rows={3}
-        />
+        <div className="flex-1 flex flex-col">
+          <textarea
+            value={input}
+            onChange={(e) => {
+              const newValue = e.target.value;
+              if (newValue.length <= MAX_MESSAGE_LENGTH) {
+                setInput(newValue);
+              }
+            }}
+            onKeyDown={handleKeyDown}
+            placeholder="メッセージを入力... (Enter: 送信, Shift+Enter: 改行)"
+            disabled={disabled}
+            maxLength={MAX_MESSAGE_LENGTH}
+            className={`flex-1 resize-none rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed ${
+              input.length >= MAX_MESSAGE_LENGTH
+                ? 'border-red-500 focus:ring-red-500'
+                : input.length >= WARNING_MESSAGE_LENGTH
+                ? 'border-yellow-500 focus:ring-yellow-500'
+                : 'border-gray-300 dark:border-gray-600'
+            }`}
+            rows={3}
+          />
+          {/* 文字数カウンター */}
+          <div className="flex justify-end mt-1">
+            <span
+              className={`text-xs ${
+                input.length >= MAX_MESSAGE_LENGTH
+                  ? 'text-red-600 dark:text-red-400 font-medium'
+                  : input.length >= WARNING_MESSAGE_LENGTH
+                  ? 'text-yellow-600 dark:text-yellow-400'
+                  : 'text-gray-400 dark:text-gray-500'
+              }`}
+            >
+              {input.length.toLocaleString()}/{MAX_MESSAGE_LENGTH.toLocaleString()}
+              {input.length >= WARNING_MESSAGE_LENGTH && input.length < MAX_MESSAGE_LENGTH && (
+                <span className="ml-1">⚠️ 上限に近づいています</span>
+              )}
+              {input.length >= MAX_MESSAGE_LENGTH && (
+                <span className="ml-1">⛔ 上限に達しました</span>
+              )}
+            </span>
+          </div>
+        </div>
         <button
           onClick={handleSubmit}
-          disabled={disabled || (!input.trim() && images.length === 0 && documents.length === 0)}
-          className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
+          disabled={disabled || (!input.trim() && images.length === 0 && documents.length === 0) || input.length > MAX_MESSAGE_LENGTH}
+          className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg self-start"
         >
           送信
         </button>
