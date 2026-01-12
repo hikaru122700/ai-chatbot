@@ -134,10 +134,15 @@ export default function MessageInput({
   };
 
   const handleSubmit = () => {
-    if ((input.trim() || images.length > 0) && !disabled) {
-      onSendMessage(input.trim(), images.length > 0 ? images : undefined);
+    if ((input.trim() || images.length > 0 || documents.length > 0) && !disabled) {
+      onSendMessage(
+        input.trim(),
+        images.length > 0 ? images : undefined,
+        documents.length > 0 ? documents : undefined
+      );
       setInput('');
       setImages([]);
+      setDocuments([]);
     }
   };
 
