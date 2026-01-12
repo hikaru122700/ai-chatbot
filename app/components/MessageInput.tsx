@@ -14,6 +14,12 @@ const MAX_IMAGE_SIZE_MB = 5;
 const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
 const MAX_IMAGES_COUNT = 5;
 
+// トークン制限: 文字数による簡易的な制限
+// GPT-4oは約4文字/トークン（英語）、日本語は約1.5文字/トークン
+// 安全マージンを考慮して8000文字を上限とする（約4000-5000トークン相当）
+const MAX_MESSAGE_LENGTH = 8000;
+const WARNING_MESSAGE_LENGTH = 6000;
+
 export interface DocumentAttachment {
   name: string;
   content: string;
