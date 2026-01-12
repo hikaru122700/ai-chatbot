@@ -64,7 +64,7 @@ export default function ChatInterface() {
     }
   };
 
-  const handleSendMessage = async (message: string, images?: ImageAttachment[]) => {
+  const handleSendMessage = async (message: string, images?: ImageAttachment[], documents?: DocumentAttachment[]) => {
     if (!apiKey) {
       setError('APIキーを設定してください');
       setShowSettings(true);
@@ -74,13 +74,31 @@ export default function ChatInterface() {
     setIsLoading(true);
     setError(null);
 
+    // Build display message with document info
+    let displayMessage = message;
+    if (documents && documents.length > 0) {
+      const docNames = documents.map(d => d.name).join(', ');
+      displayMessage = message
+        ? `${message}\n\n[添付ファイル: ${docNames}]`
+        : `[添付ファイル: ${docNames}]`;
+    }
+
     const userMessage: Message = {
       role: 'user',
-      content: message,
+      content: displayMessage,
       images: images,
     };
 
     setMessages((prev) => [...prev, userMessage]);
+
+    // Build the actual message to send with document content
+    let messageWithDocs = message;
+    if (documents && documents.length > 0) {
+      const docContents = documents.map(d => `--- ${d.name} ---\n${d.content}`).join('\n\n');
+      messageWithDocs = message
+        ? `${message}\n\n以下は添付されたドキュメントの内容です:\n\n${docContents}`
+        : `以下のドキュメントの内容について説明してください:\n\n${docContents}`;
+    }
 
     try {
       const response = await fetch('/api/chat', {
@@ -91,7 +109,7 @@ export default function ChatInterface() {
         },
         body: JSON.stringify({
           conversationId: currentConversationId,
-          message,
+          message: messageWithDocs,
           images: images,
           systemPrompt: character ? `あなたは「${character.name}」という名前のAIアシスタントです。
 性格: ${character.personality}
