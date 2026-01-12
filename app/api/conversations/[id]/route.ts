@@ -68,6 +68,14 @@ export async function DELETE(
   try {
     const { id } = await params;
 
+    // IDの形式検証
+    if (!id || typeof id !== 'string' || !isValidUUID(id)) {
+      return NextResponse.json(
+        { error: '無効な会話IDです' },
+        { status: 400 }
+      );
+    }
+
     await prisma.conversation.delete({
       where: { id },
     });
